@@ -1,0 +1,16 @@
+{
+  "name": "zao-music-bot",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "bot",
+    "web",
+    "shared"
+  ],
+  "scripts": {
+    "dev:bot": "npm run dev --workspace=bot",
+    "dev:web": "npm run dev --workspace=web",
+    "build:web": "npm run build --workspace=web",
+    "deploy-commands": "npm run deploy-commands --workspace=bot"
+  }
+}

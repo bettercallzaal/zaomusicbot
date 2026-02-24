@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "name": "Chill Vibes",
+    "description": "Relaxing tunes to wind down",
+    "tracks": [
+      { "title": "Lofi Hip Hop Beat", "query": "lofi hip hop beat chill", "url": "" },
+      { "title": "Sunset Drive", "query": "sunset drive chill beat", "url": "" }
+    ],
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "name": "Hype Mix",
+    "description": "Get pumped up",
+    "tracks": [
+      { "title": "Energy Boost", "query": "energy boost edm", "url": "" },
+      { "title": "Bass Drop", "query": "bass drop dubstep", "url": "" }
+    ],
+    "createdAt": "2025-01-02T00:00:00.000Z"
+  }
+]
