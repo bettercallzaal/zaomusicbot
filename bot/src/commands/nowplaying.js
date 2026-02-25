@@ -8,9 +8,9 @@ module.exports = {
     .setDescription('Show the currently playing song'),
 
   async execute(interaction) {
-    const queue = interaction.client.distube.getQueue(interaction.guildId);
-    if (!queue) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
-    const embed = nowPlayingEmbed(queue.songs[0]);
+    const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+    if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
+    const embed = nowPlayingEmbed(player.queue.current);
     const row = createPlayerRow();
     await interaction.reply({ embeds: [embed], components: [row] });
   },

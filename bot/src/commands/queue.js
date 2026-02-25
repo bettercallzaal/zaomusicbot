@@ -10,10 +10,10 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const queue = interaction.client.distube.getQueue(interaction.guildId);
-    if (!queue) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
+    const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+    if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
     const page = (interaction.options.getInteger('page') || 1) - 1;
-    const embed = queueEmbed(queue, page);
+    const embed = queueEmbed(player, page);
     await interaction.reply({ embeds: [embed] });
   },
 };

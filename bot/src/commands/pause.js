@@ -8,9 +8,9 @@ module.exports = {
 
   async execute(interaction) {
     if (!requireDJ(interaction)) return;
-    const queue = interaction.client.distube.getQueue(interaction.guildId);
-    if (!queue) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
-    queue.pause();
+    const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+    if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
+    await player.pause();
     await interaction.reply('⏸️ Paused.');
   },
 };

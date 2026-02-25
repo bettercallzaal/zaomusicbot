@@ -6,9 +6,9 @@ module.exports = {
     .setDescription('Shuffle the queue'),
 
   async execute(interaction) {
-    const queue = interaction.client.distube.getQueue(interaction.guildId);
-    if (!queue) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
-    queue.shuffle();
+    const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+    if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
+    await player.queue.shuffle();
     await interaction.reply('🔀 Queue shuffled.');
   },
 };

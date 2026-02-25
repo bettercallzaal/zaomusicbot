@@ -1,6 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { isDJ } = require('../utils/djPerms');
-const { RepeatMode } = require('distube');
 
 function createPlayerRow() {
   return new ActionRowBuilder().addComponents(
@@ -15,63 +14,69 @@ function createPlayerRow() {
 async function handleButton(interaction) {
   if (!interaction.customId.startsWith('player_')) return;
 
-  const distube = interaction.client.distube;
-  const queue = distube.getQueue(interaction.guildId);
-
-  if (!queue) {
+  const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+  if (!player || !player.queue.current) {
     return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
   }
 
   const member = interaction.member;
   const voiceChannel = member.voice?.channel;
-  if (!voiceChannel || voiceChannel.id !== queue.voice.channelId) {
+  if (!voiceChannel || voiceChannel.id !== player.voiceChannelId) {
     return interaction.reply({ content: 'You must be in the same voice channel.', ephemeral: true });
   }
 
   const action = interaction.customId.replace('player_', '');
 
-  switch (action) {
-    case 'pause':
-      if (queue.paused) {
-        queue.resume();
-        await interaction.reply({ content: '▶️ Resumed.' });
-      } else {
-        queue.pause();
-        await interaction.reply({ content: '⏸️ Paused.' });
-      }
-      break;
+  try {
+    switch (action) {
+      case 'pause':
+        if (player.paused) {
+          await player.resume();
+          await interaction.reply({ content: '▶️ Resumed.' });
+        } else {
+          await player.pause();
+          await interaction.reply({ content: '⏸️ Paused.' });
+        }
+        break;
 
-    case 'skip':
-      if (queue.songs.length <= 1 && queue.repeatMode === RepeatMode.DISABLED) {
-        queue.stop();
-        await interaction.reply({ content: '⏭️ Skipped. No more songs in queue.' });
-      } else {
-        await queue.skip();
-        await interaction.reply({ content: '⏭️ Skipped.' });
-      }
-      break;
+      case 'skip':
+        if (player.queue.tracks.length === 0) {
+          await player.stopPlaying(true, false);
+          await interaction.reply({ content: '⏭️ Skipped. No more songs in queue.' });
+        } else {
+          await player.skip();
+          await interaction.reply({ content: '⏭️ Skipped.' });
+        }
+        break;
 
-    case 'stop':
-      if (!isDJ(member)) {
-        return interaction.reply({ content: 'You need the DJ role to stop.', ephemeral: true });
-      }
-      queue.stop();
-      await interaction.reply({ content: '⏹️ Stopped and cleared the queue.' });
-      break;
+      case 'stop':
+        if (!isDJ(member)) {
+          return interaction.reply({ content: 'You need the DJ role to stop.', ephemeral: true });
+        }
+        await player.destroy();
+        await interaction.reply({ content: '⏹️ Stopped and cleared the queue.' });
+        break;
 
-    case 'loop': {
-      const modes = [RepeatMode.DISABLED, RepeatMode.SONG, RepeatMode.QUEUE];
-      const labels = ['Off', 'Song', 'Queue'];
-      const next = (modes.indexOf(queue.repeatMode) + 1) % modes.length;
-      queue.setRepeatMode(modes[next]);
-      await interaction.reply({ content: `🔁 Loop: **${labels[next]}**` });
-      break;
+      case 'loop': {
+        const modes = ['off', 'track', 'queue'];
+        const labels = ['Off', 'Song', 'Queue'];
+        const current = modes.indexOf(player.repeatMode);
+        const next = (current + 1) % modes.length;
+        await player.setRepeatMode(modes[next]);
+        await interaction.reply({ content: `🔁 Loop: **${labels[next]}**` });
+        break;
+      }
+
+      case 'shuffle':
+        await player.queue.shuffle();
+        await interaction.reply({ content: '🔀 Queue shuffled.' });
+        break;
     }
-
-    case 'shuffle':
-      queue.shuffle();
-      await interaction.reply({ content: '🔀 Queue shuffled.' });
-      break;
+  } catch (error) {
+    console.error('Button error:', error.message);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: `Error: ${error.message}`, ephemeral: true });
+    }
   }
 }
 

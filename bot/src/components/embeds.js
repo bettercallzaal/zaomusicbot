@@ -1,54 +1,60 @@
 const { EmbedBuilder } = require('discord.js');
 const { formatDuration } = require('../utils/formatDuration');
 
-function nowPlayingEmbed(song) {
+function nowPlayingEmbed(track) {
+  const info = track.info;
   return new EmbedBuilder()
     .setColor(0x5865f2)
     .setTitle('Now Playing')
-    .setDescription(`[${song.name}](${song.url})`)
-    .setThumbnail(song.thumbnail)
+    .setDescription(`[${info.title}](${info.uri})`)
+    .setThumbnail(info.artworkUrl || null)
     .addFields(
-      { name: 'Duration', value: formatDuration(song.duration), inline: true },
-      { name: 'Requested by', value: `${song.user}`, inline: true },
+      { name: 'Duration', value: formatDuration(Math.floor(info.duration / 1000)), inline: true },
+      { name: 'Author', value: info.author || 'Unknown', inline: true },
+      { name: 'Requested by', value: track.requester ? `<@${track.requester.id}>` : 'Unknown', inline: true },
     )
     .setTimestamp();
 }
 
-function addedToQueueEmbed(song) {
+function addedToQueueEmbed(track, position) {
+  const info = track.info;
   return new EmbedBuilder()
     .setColor(0x57f287)
     .setTitle('Added to Queue')
-    .setDescription(`[${song.name}](${song.url})`)
-    .setThumbnail(song.thumbnail)
+    .setDescription(`[${info.title}](${info.uri})`)
+    .setThumbnail(info.artworkUrl || null)
     .addFields(
-      { name: 'Duration', value: formatDuration(song.duration), inline: true },
-      { name: 'Requested by', value: `${song.user}`, inline: true },
+      { name: 'Duration', value: formatDuration(Math.floor(info.duration / 1000)), inline: true },
+      { name: 'Position', value: `#${position}`, inline: true },
     );
 }
 
-function queueEmbed(queue, page = 0) {
-  const songs = queue.songs;
+function queueEmbed(player, page = 0) {
+  const queue = player.queue;
+  const current = queue.current;
+  const tracks = queue.tracks;
   const itemsPerPage = 10;
-  const pages = Math.ceil((songs.length - 1) / itemsPerPage) || 1;
-  const current = songs[0];
+  const pages = Math.ceil(tracks.length / itemsPerPage) || 1;
 
-  const start = page * itemsPerPage + 1;
-  const end = Math.min(start + itemsPerPage, songs.length);
+  const start = page * itemsPerPage;
+  const end = Math.min(start + itemsPerPage, tracks.length);
 
-  const embed = new EmbedBuilder()
+  const currentInfo = current?.info;
+  const description = currentInfo
+    ? `**Now Playing:** [${currentInfo.title}](${currentInfo.uri}) - \`${formatDuration(Math.floor(currentInfo.duration / 1000))}\`\n\n`
+    : '';
+
+  const queueList = tracks.length > 0
+    ? tracks.slice(start, end).map((t, i) =>
+        `**${start + i + 1}.** [${t.info.title}](${t.info.uri}) - \`${formatDuration(Math.floor(t.info.duration / 1000))}\``
+      ).join('\n')
+    : 'No more songs in queue.';
+
+  return new EmbedBuilder()
     .setColor(0x5865f2)
     .setTitle('Queue')
-    .setDescription(
-      `**Now Playing:** [${current.name}](${current.url}) - \`${formatDuration(current.duration)}\`\n\n` +
-      (songs.length > 1
-        ? songs.slice(start, end).map((s, i) =>
-            `**${start + i}.** [${s.name}](${s.url}) - \`${formatDuration(s.duration)}\` | ${s.user}`
-          ).join('\n')
-        : 'No more songs in queue.')
-    )
-    .setFooter({ text: `Page ${page + 1}/${pages} | ${songs.length} songs` });
-
-  return embed;
+    .setDescription(description + queueList)
+    .setFooter({ text: `Page ${page + 1}/${pages} | ${tracks.length + (current ? 1 : 0)} songs` });
 }
 
 function errorEmbed(message) {

@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { RepeatMode } = require('distube');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,15 +6,15 @@ module.exports = {
     .setDescription('Skip the current song'),
 
   async execute(interaction) {
-    const queue = interaction.client.distube.getQueue(interaction.guildId);
-    if (!queue) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
+    const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+    if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
 
-    if (queue.songs.length <= 1 && queue.repeatMode === RepeatMode.DISABLED) {
-      queue.stop();
+    if (player.queue.tracks.length === 0) {
+      await player.stopPlaying(true, false);
       return interaction.reply('⏭️ Skipped. No more songs in queue.');
     }
 
-    await queue.skip();
+    await player.skip();
     await interaction.reply('⏭️ Skipped.');
   },
 };

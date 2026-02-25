@@ -5,9 +5,10 @@ module.exports = {
   clientId: process.env.CLIENT_ID,
   guildId: process.env.GUILD_ID,
   djRoleId: process.env.DJ_ROLE_ID,
-  spotify: {
-    clientId: process.env.SPOTIFY_CLIENT_ID,
-    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  lavalink: {
+    host: process.env.LAVALINK_HOST || 'localhost',
+    port: parseInt(process.env.LAVALINK_PORT || '2333'),
+    password: process.env.LAVALINK_PASSWORD || 'zaomusicbot',
   },
   playlistApi: {
     url: process.env.PLAYLIST_API_URL || 'http://localhost:3000',

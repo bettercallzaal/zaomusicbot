@@ -11,15 +11,15 @@ module.exports = {
 
   async execute(interaction) {
     if (!requireDJ(interaction)) return;
-    const queue = interaction.client.distube.getQueue(interaction.guildId);
-    if (!queue) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
+    const player = interaction.client.lavalink.getPlayer(interaction.guildId);
+    if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
 
-    const pos = interaction.options.getInteger('position');
-    if (pos >= queue.songs.length) {
-      return interaction.reply({ content: `Invalid position. Queue has ${queue.songs.length - 1} songs.`, ephemeral: true });
+    const pos = interaction.options.getInteger('position') - 1;
+    if (pos >= player.queue.tracks.length) {
+      return interaction.reply({ content: `Invalid position. Queue has ${player.queue.tracks.length} songs.`, ephemeral: true });
     }
 
-    const removed = queue.songs.splice(pos, 1)[0];
-    await interaction.reply(`🗑️ Removed **${removed.name}** from the queue.`);
+    const removed = player.queue.tracks.splice(pos, 1)[0];
+    await interaction.reply(`🗑️ Removed **${removed.info.title}** from the queue.`);
   },
 };

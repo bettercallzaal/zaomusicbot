@@ -1,14 +1,9 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { DisTube } = require('distube');
-const { YouTubePlugin } = require('@distube/youtube');
-const { SpotifyPlugin } = require('@distube/spotify');
-const { SoundCloudPlugin } = require('@distube/soundcloud');
-const { DirectLinkPlugin } = require('@distube/direct-link');
+const { LavalinkManager } = require('lavalink-client');
 const config = require('./config');
 const { loadCommands } = require('./commands');
 const { loadEvents } = require('./events');
-const { loadDistubeEvents } = require('./distube');
-const { ZAOPlaylistPlugin } = require('./distube/ZAOPlaylistPlugin');
+const { loadLavalinkEvents } = require('./lavalink');
 
 const client = new Client({
   intents: [
@@ -20,25 +15,34 @@ const client = new Client({
 
 client.commands = new Collection();
 
-const distube = new DisTube(client, {
-  plugins: [
-    new YouTubePlugin(),
-    new SpotifyPlugin({
-      api: {
-        clientId: config.spotify.clientId,
-        clientSecret: config.spotify.clientSecret,
-      },
-    }),
-    new SoundCloudPlugin(),
-    new DirectLinkPlugin(),
-    new ZAOPlaylistPlugin(),
+client.lavalink = new LavalinkManager({
+  nodes: [
+    {
+      id: 'main',
+      host: config.lavalink.host,
+      port: config.lavalink.port,
+      authorization: config.lavalink.password,
+    },
   ],
+  sendToShard: (guildId, payload) => {
+    const guild = client.guilds.cache.get(guildId);
+    if (guild) guild.shard.send(payload);
+  },
+  client: {
+    id: config.clientId,
+    username: 'ZAOMusicBot',
+  },
+  autoSkip: true,
+  playerOptions: {
+    defaultSearchPlatform: 'ytsearch',
+    onEmptyQueue: {
+      destroyAfterMs: 30_000,
+    },
+  },
 });
-
-client.distube = distube;
 
 loadCommands(client);
 loadEvents(client);
-loadDistubeEvents(distube);
+loadLavalinkEvents(client);
 
 client.login(config.token);

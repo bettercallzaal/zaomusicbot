@@ -1,0 +1,47 @@
+server:
+  port: 2333
+  address: 0.0.0.0
+
+lavalink:
+  plugins:
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.0"
+      repository: "https://maven.lavalink.dev/releases"
+    - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.3.0"
+      repository: "https://maven.lavalink.dev/releases"
+  server:
+    password: "zaomusicbot"
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: false
+
+plugins:
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+    clients:
+      - MUSIC
+      - ANDROID_VR
+      - TVHTML5_SIMPLY
+      - WEB
+  lavasrc:
+    sources:
+      spotify: true
+      deezer: false
+      yandexmusic: false
+      applemusic: false
+    spotify:
+      clientId: "5f43f085eb74414c941c4f8d79ff3a58"
+      clientSecret: "a53b3e2886e34d17b2d46f1618cb7b82"
+      countryCode: "US"
+
+logging:
+  level:
+    root: INFO
+    lavalink: INFO

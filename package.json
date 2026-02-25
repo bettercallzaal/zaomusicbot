@@ -11,6 +11,7 @@
     "dev:bot": "npm run dev --workspace=bot",
     "dev:web": "npm run dev --workspace=web",
     "build:web": "npm run build --workspace=web",
-    "deploy-commands": "npm run deploy-commands --workspace=bot"
+    "deploy-commands": "npm run deploy-commands --workspace=bot",
+    "lavalink": "cd lavalink && /opt/homebrew/opt/openjdk@17/bin/java -jar Lavalink.jar"
   }
 }

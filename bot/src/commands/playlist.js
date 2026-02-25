@@ -25,14 +25,12 @@ module.exports = {
         if (!playlists.length) {
           return interaction.editReply('No playlists found.');
         }
-
         const embed = new EmbedBuilder()
           .setColor(0x5865f2)
           .setTitle('Playlists')
           .setDescription(
             playlists.map((p, i) => `**${i + 1}.** ${p.name} (${p.tracks.length} tracks)`).join('\n')
           );
-
         await interaction.editReply({ embeds: [embed] });
       } catch (error) {
         console.error('Playlist list error:', error);
@@ -51,26 +49,39 @@ module.exports = {
 
       try {
         const playlist = await findPlaylistByName(name);
-        if (!playlist) {
-          return interaction.editReply(`Playlist **${name}** not found.`);
+        if (!playlist) return interaction.editReply(`Playlist **${name}** not found.`);
+        if (!playlist.tracks.length) return interaction.editReply(`Playlist **${name}** is empty.`);
+
+        let player = interaction.client.lavalink.getPlayer(interaction.guildId);
+        if (!player) {
+          player = interaction.client.lavalink.createPlayer({
+            guildId: interaction.guildId,
+            voiceChannelId: voiceChannel.id,
+            textChannelId: interaction.channelId,
+            selfDeaf: true,
+          });
+          await player.connect();
         }
 
-        if (!playlist.tracks.length) {
-          return interaction.editReply(`Playlist **${name}** is empty.`);
-        }
-
-        await interaction.editReply(`Loading **${playlist.name}** (${playlist.tracks.length} tracks)...`);
-
+        let loaded = 0;
         for (const track of playlist.tracks) {
+          const query = track.url || track.query;
           try {
-            await interaction.client.distube.play(voiceChannel, track.url || track.query, {
-              textChannel: interaction.channel,
-              member: interaction.member,
-            });
+            const result = await player.search({ query }, interaction.user);
+            if (result.tracks.length) {
+              await player.queue.add(result.tracks[0]);
+              loaded++;
+            }
           } catch (e) {
-            console.error(`Failed to load track: ${track.url || track.query}`, e.message);
+            console.error(`Failed to load track: ${query}`, e.message);
           }
         }
+
+        if (!player.playing && loaded > 0) {
+          await player.play();
+        }
+
+        await interaction.editReply(`Loaded **${loaded}/${playlist.tracks.length}** tracks from **${playlist.name}**.`);
       } catch (error) {
         console.error('Playlist load error:', error);
         await interaction.editReply('Failed to load playlist.');
