@@ -4,7 +4,7 @@ module.exports = {
   name: Events.VoiceStateUpdate,
   async execute(oldState, newState) {
     const client = oldState.client || newState.client;
-    const distube = client.distube;
+    const lavalink = client.lavalink;
 
     // Auto-disconnect when bot is alone in voice channel
     if (oldState.member && !oldState.member.user.bot && oldState.channelId) {
@@ -16,18 +16,21 @@ module.exports = {
 
       const humans = channel.members.filter(m => !m.user.bot);
       if (humans.size === 0) {
-        setTimeout(() => {
-          const refreshed = oldState.guild.channels.cache.get(channel.id);
-          if (refreshed) {
-            const stillAlone = refreshed.members.filter(m => !m.user.bot).size === 0;
-            if (stillAlone) {
-              const queue = distube.getQueue(oldState.guild.id);
-              if (queue) {
-                queue.stop();
+        setTimeout(async () => {
+          try {
+            const refreshed = oldState.guild.channels.cache.get(channel.id);
+            if (refreshed) {
+              const stillAlone = refreshed.members.filter(m => !m.user.bot).size === 0;
+              if (stillAlone) {
+                const player = lavalink.getPlayer(oldState.guild.id);
+                if (player) {
+                  await player.destroy();
+                }
+                console.log(`Left empty voice channel in ${oldState.guild.name}`);
               }
-              distube.voices.leave(oldState.guild.id);
-              console.log(`Left empty voice channel in ${oldState.guild.name}`);
             }
+          } catch (error) {
+            console.error('Auto-disconnect error:', error.message);
           }
         }, 30_000); // 30 second grace period
       }

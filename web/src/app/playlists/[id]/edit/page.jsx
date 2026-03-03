@@ -1,62 +1,82 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function NewPlaylist() {
+export default function EditPlaylist() {
   const router = useRouter();
+  const params = useParams();
+  const { id } = params;
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [tracks, setTracks] = useState([{ title: '', url: '' }]);
-  const [loading, setLoading] = useState(false);
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/playlists/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then(data => {
+        setName(data.name);
+        setDescription(data.description || '');
+        setTracks(data.tracks || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        router.push('/');
+      });
+  }, [id, router]);
 
   function addTrack() {
-    setTracks([...tracks, { title: '', url: '' }]);
+    setTracks([...tracks, { title: '', url: '', query: '' }]);
   }
 
   function removeTrack(index) {
-    if (tracks.length <= 1) return;
     setTracks(tracks.filter((_, i) => i !== index));
   }
 
   function updateTrack(index, field, value) {
     const updated = [...tracks];
     updated[index] = { ...updated[index], [field]: value };
+    if (field === 'title') updated[index].query = value;
     setTracks(updated);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
 
-    const formattedTracks = tracks
-      .filter(t => t.title.trim() || t.url.trim())
-      .map(t => ({
-        title: t.title.trim() || t.url.trim(),
-        query: t.title.trim() || t.url.trim(),
-        url: t.url.trim(),
-      }));
-
-    const res = await fetch('/api/playlists', {
-      method: 'POST',
+    const res = await fetch(`/api/playlists/${id}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description, tracks: formattedTracks }),
+      body: JSON.stringify({ name, description, tracks }),
     });
 
     if (res.ok) {
-      const playlist = await res.json();
-      router.push(`/playlists/${playlist.id}`);
+      router.push(`/playlists/${id}`);
     } else {
-      alert('Failed to create playlist');
-      setLoading(false);
+      alert('Failed to save playlist');
+      setSaving(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="container">
+        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+      </div>
+    );
   }
 
   return (
     <div className="container">
-      <Link href="/" className="back-link">&larr; Back to playlists</Link>
-      <h1 style={{ marginBottom: '1.5rem' }}>New Playlist</h1>
+      <Link href={`/playlists/${id}`} className="back-link">&larr; Back to playlist</Link>
+      <h1 style={{ marginBottom: '1.5rem' }}>Edit Playlist</h1>
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -78,13 +98,13 @@ export default function NewPlaylist() {
               }}>
                 <span style={{ color: 'var(--text-muted)', minWidth: '1.5rem', fontWeight: 600 }}>{i + 1}</span>
                 <input
-                  value={track.title}
+                  value={track.title || track.query || ''}
                   onChange={e => updateTrack(i, 'title', e.target.value)}
                   placeholder="Song title"
                   style={{ flex: 1 }}
                 />
                 <input
-                  value={track.url}
+                  value={track.url || ''}
                   onChange={e => updateTrack(i, 'url', e.target.value)}
                   placeholder="URL (optional)"
                   style={{ flex: 1 }}
@@ -92,14 +112,13 @@ export default function NewPlaylist() {
                 <button
                   type="button"
                   onClick={() => removeTrack(i)}
-                  disabled={tracks.length <= 1}
                   style={{
-                    background: tracks.length <= 1 ? 'var(--surface)' : 'var(--danger)',
-                    color: tracks.length <= 1 ? 'var(--text-muted)' : 'white',
+                    background: 'var(--danger)',
+                    color: 'white',
                     border: 'none',
                     borderRadius: '6px',
                     padding: '0.4rem 0.6rem',
-                    cursor: tracks.length <= 1 ? 'not-allowed' : 'pointer',
+                    cursor: 'pointer',
                     fontSize: '0.85rem',
                   }}
                 >
@@ -126,8 +145,8 @@ export default function NewPlaylist() {
           </button>
         </div>
 
-        <button type="submit" className="btn" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Playlist'}
+        <button type="submit" className="btn" disabled={saving}>
+          {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
     </div>

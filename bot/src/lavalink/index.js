@@ -1,4 +1,4 @@
-const { nowPlayingEmbed, addedToQueueEmbed } = require('../components/embeds');
+const { nowPlayingEmbed } = require('../components/embeds');
 const { createPlayerRow } = require('../components/playerButtons');
 
 function loadLavalinkEvents(client) {
@@ -17,9 +17,9 @@ function loadLavalinkEvents(client) {
   lavalink.on('trackStart', (player, track) => {
     const channel = client.channels.cache.get(player.textChannelId);
     if (!channel) return;
-    const embed = nowPlayingEmbed(track);
-    const row = createPlayerRow();
-    channel.send({ embeds: [embed], components: [row] });
+    const embed = nowPlayingEmbed(track, player);
+    const rows = createPlayerRow();
+    channel.send({ embeds: [embed], components: rows });
   });
 
   lavalink.on('trackEnd', (player, track, reason) => {
@@ -52,6 +52,24 @@ function loadLavalinkEvents(client) {
 
   lavalink.on('playerDisconnect', (player) => {
     player.destroy();
+  });
+
+  // Handle Lavalink node errors without crashing
+  lavalink.on('nodeError', (node, error) => {
+    console.error(`Lavalink node "${node.id}" error:`, error.message);
+  });
+
+  lavalink.on('nodeDisconnect', (node, reason) => {
+    console.warn(`Lavalink node "${node.id}" disconnected. Reconnecting...`);
+  });
+
+  lavalink.on('nodeReconnect', (node) => {
+    console.log(`Lavalink node "${node.id}" reconnected.`);
+  });
+
+  // Catch unhandled errors on the client to prevent crashes
+  process.on('unhandledRejection', (error) => {
+    console.error('Unhandled rejection:', error.message || error);
   });
 
   console.log('Loaded Lavalink events');
