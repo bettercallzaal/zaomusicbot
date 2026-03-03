@@ -40,6 +40,13 @@ plugins:
       clientId: "5f43f085eb74414c941c4f8d79ff3a58"
       clientSecret: "a53b3e2886e34d17b2d46f1618cb7b82"
       countryCode: "US"
+    # To enable Deezer, set deezer: true above and add:
+    # deezer:
+    #   masterDecryptionKey: "your_deezer_master_key"
+    # To enable Apple Music, set applemusic: true above and add:
+    # applemusic:
+    #   mediaAPIToken: "your_apple_media_token"
+    #   countryCode: "US"
 
 logging:
   level:

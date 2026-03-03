@@ -2,20 +2,42 @@
 
 A feature-rich Discord music bot powered by **Lavalink** and **discord.js v14**, with a **Next.js** playlist management web UI.
 
+## Supported Platforms
+
+| Platform | How to Use | Icon | Status |
+|----------|-----------|------|--------|
+| YouTube | `/play <search or URL>` | ▶️ | Ready |
+| Spotify | `/play <spotify link>` | 🟢 | Ready |
+| SoundCloud | `/play <soundcloud link>` | 🟠 | Ready |
+| Audius | `/play audius:<search>` or `/play <audius.co link>` | 🎧 | Ready |
+| Bandcamp | `/play <bandcamp link>` | 🎵 | Ready |
+| Twitch | `/play <twitch stream link>` | 🎵 | Ready |
+| Vimeo | `/play <vimeo link>` | 🎵 | Ready |
+| Direct URL | `/play <any .mp3/.wav/audio URL>` | 🎵 | Ready |
+| Deezer | `/play <deezer link>` | 🟣 | Needs key (see Setup) |
+| Apple Music | `/play <apple music link>` | 🍎 | Needs token (see Setup) |
+
 ## Features
 
 ### Music Playback
-- Play from YouTube, Spotify, SoundCloud, Deezer, and more via Lavalink
+- Multi-platform search and playback via Lavalink
 - Queue management with shuffle, loop (track/queue), and autoplay
 - Audio filters: Bass Boost, Nightcore, Vaporwave, Karaoke, Tremolo, Vibrato, Rotation, Low Pass
 - Now-playing embed with progress bar and active filters display
 - Source icons showing where tracks come from
+- Default volume starts at 10%
+
+### Volume Controls
+- `/volume <1-100>` — set exact volume
+- `/volumeup` / `/volumedown` — small adjustments (+/- 5%)
+- `/volumebigup` / `/volumebigdown` — big jumps (+/- 20%)
+- Player buttons: `--` `-` `+` `++` on every now-playing embed
 
 ### Commands
 
 | Command | Description | DJ Only |
 |---------|-------------|---------|
-| `/play <query>` | Play a song or URL | No |
+| `/play <query>` | Play a song, URL, or `audius:<search>` | No |
 | `/pause` | Pause playback | Yes |
 | `/resume` | Resume playback | Yes |
 | `/skip` | Skip current song (vote skip for non-DJ) | No |
@@ -29,13 +51,22 @@ A feature-rich Discord music bot powered by **Lavalink** and **discord.js v14**,
 | `/clear` | Clear queue without stopping current song | Yes |
 | `/loop <off/song/queue>` | Set loop mode | No |
 | `/autoplay` | Toggle autoplay | Yes |
-| `/volume <1-100>` | Set volume | Yes |
+| `/volume <1-100>` | Set exact volume | Yes |
+| `/volumeup` | Volume +5% | Yes |
+| `/volumedown` | Volume -5% | Yes |
+| `/volumebigup` | Volume +20% | Yes |
+| `/volumebigdown` | Volume -20% | Yes |
 | `/filter <name>` | Toggle audio filter | Yes |
 | `/playlist list` | List all website playlists | No |
 | `/playlist load <name>` | Load a playlist into queue | No |
 | `/save <name>` | Save current queue as a website playlist | No |
 | `/lyrics [query]` | Show lyrics for current or given song | No |
 | `/help` | Show all commands | No |
+
+### Player Buttons
+Every now-playing embed has two rows of buttons:
+- **Row 1:** ⏸️ Pause/Resume | ⏭️ Skip | ⏹️ Stop | 🔁 Loop | 🔀 Shuffle
+- **Row 2:** `--` Vol -20% | `-` Vol -5% | `+` Vol +5% | `++` Vol +20%
 
 ### Vote Skip
 When a non-DJ user runs `/skip`, a vote is initiated. Over 50% of voice channel members must vote yes to skip. DJs always skip instantly.
@@ -56,6 +87,7 @@ ZAOMusicBot/
 │       ├── components/     # Embeds & button builders
 │       ├── events/         # Discord event handlers
 │       ├── lavalink/       # Lavalink event setup
+│       ├── services/       # External API integrations (Audius)
 │       ├── utils/          # Helpers (DJ perms, formatting)
 │       ├── config.js       # Config with startup validation
 │       ├── index.js        # Entry point with graceful shutdown
@@ -111,6 +143,23 @@ PLAYLIST_API_KEY=
 
 The bot validates required vars on startup and warns about missing optional ones.
 
+### Optional: Enable Deezer & Apple Music
+
+In `lavalink/application.yml`, set the source to `true` and add credentials:
+
+**Deezer** — requires a master decryption key:
+```yaml
+deezer:
+  masterDecryptionKey: "your_deezer_master_key"
+```
+
+**Apple Music** — requires an Apple Media API token:
+```yaml
+applemusic:
+  mediaAPIToken: "your_apple_media_token"
+  countryCode: "US"
+```
+
 ### 3. Start Lavalink
 
 ```bash
@@ -135,35 +184,22 @@ npm run dev:bot
 npm run dev:web
 ```
 
-## What's New in v2.0.0
+## Roadmap
 
-### Bug Fixes
-- Fixed voice disconnect — bot now properly leaves when channel empties (was referencing removed DisTube)
-- Added startup config validation with clear error messages
-- API routes wrapped in try-catch with proper error responses and input validation
-- Graceful shutdown on `SIGINT`/`SIGTERM` — destroys all players cleanly
+These are ideas for future development:
 
-### UX Improvements
-- Now-playing embed shows visual progress bar: `▬▬▬🔘▬▬▬▬▬▬ 1:23 / 3:45`
-- Active audio filters displayed on now-playing embed
-- Queue has interactive Prev/Next pagination buttons
-- Play command shows source icons and queue position
-- Seek validates against track duration and shows position info
-
-### New Commands
-- `/lyrics` — fetch and display lyrics with pagination
-- `/move <from> <to>` — reorder tracks in queue (DJ)
-- `/save <name>` — save current queue as a website playlist
-- `/clear` — clear upcoming queue without stopping current song (DJ)
-- `/skip` — now uses vote skip for non-DJ users
-
-### Web UI
-- Edit playlist page with individual track management
-- Delete playlist with confirmation dialog
-- Create page redesigned with individual track rows instead of textarea
+- [ ] **Favorites system** — `/fav` to save a song, `/favlist` to view your saved favorites
+- [ ] **Song history** — `/history` to see recently played tracks in the server
+- [ ] **DJ request queue** — users submit song requests, DJ approves or denies them
+- [ ] **Auto-lyrics** — automatically show lyrics when a song starts playing
+- [ ] **Playlist import** — paste a Spotify/YouTube playlist URL and save it to the web dashboard
+- [ ] **24/7 mode** — keep the bot in a voice channel playing music non-stop
+- [ ] **Custom playlists per user** — personal playlists tied to Discord user IDs
+- [ ] **Web dashboard auth** — Discord OAuth login for the web UI
+- [ ] **Music quiz game** — `/quiz` to start a "guess the song" game in voice chat
 
 ## Tech Stack
 - **Bot**: discord.js v14, lavalink-client
-- **Audio**: Lavalink
+- **Audio**: Lavalink with YouTube, LavaSrc (Spotify + optional Deezer/Apple Music), and custom Audius integration
 - **Web**: Next.js 15, React 19
 - **Data**: JSON file storage
