@@ -12,39 +12,42 @@ module.exports = {
       .setDescription('Here are all the available commands:')
       .addFields(
         { name: '🎵 Playback', value: [
-          '`/play <query>` - Play a song or URL (YouTube, Spotify, SoundCloud)',
-          '`/play audius:<query>` - Search and play from Audius',
-          '`/play <audius.co link>` - Play an Audius link',
+          '`/play <query>` - Play a song, URL, or `audius:search`',
           '`/pause` - Pause playback (DJ)',
           '`/resume` - Resume playback (DJ)',
-          '`/skip` - Skip current song (vote skip for non-DJ)',
+          '`/skip` - Skip current song',
           '`/stop` - Stop and clear queue (DJ)',
           '`/seek <seconds>` - Seek to position',
         ].join('\n') },
         { name: '📋 Queue', value: [
           '`/queue [page]` - Show the queue',
-          '`/nowplaying` - Show current song with progress',
+          '`/nowplaying` - Show current song',
           '`/shuffle` - Shuffle the queue',
           '`/remove <pos>` - Remove from queue (DJ)',
-          '`/move <from> <to>` - Reorder a track (DJ)',
-          '`/clear` - Clear queue, keep current song (DJ)',
           '`/loop <off/song/queue>` - Set loop mode',
           '`/autoplay` - Toggle autoplay (DJ)',
         ].join('\n') },
+        { name: '🔊 Volume', value: [
+          '`/volume <1-100>` - Set volume (DJ)',
+          '`/volumeup` - Volume +5%',
+          '`/volumedown` - Volume -5%',
+          '`/volumebigup` - Volume +20%',
+          '`/volumebigdown` - Volume -20%',
+          'Starts at **10%** on join',
+        ].join('\n') },
         { name: '🔧 Settings', value: [
-          '`/volume <1-100>` - Set exact volume (DJ)',
-          '`/volumeup` / `/volumedown` - Volume +/-5% (DJ)',
-          '`/volumebigup` / `/volumebigdown` - Volume +/-20% (DJ)',
           '`/filter <name>` - Toggle audio filter (DJ)',
         ].join('\n') },
-        { name: '📁 Playlists & Extras', value: [
+        { name: '🎧 Platforms', value: [
+          'YouTube, Spotify, SoundCloud, Bandcamp, Twitch, Audius',
+          'Use `audius:<search>` or paste an audius.co link',
+        ].join('\n') },
+        { name: '📁 Playlists', value: [
           '`/playlist list` - List all website playlists',
           '`/playlist load <name>` - Load a playlist',
-          '`/save <name>` - Save current queue as playlist',
-          '`/lyrics [query]` - Show lyrics for current/given song',
         ].join('\n') },
       )
-      .setFooter({ text: '(DJ) = Requires DJ role | Vote skip needs >50% of voice channel' });
+      .setFooter({ text: '(DJ) = Requires DJ role | Volume buttons on Now Playing embed' });
 
     await interaction.reply({ embeds: [embed] });
   },

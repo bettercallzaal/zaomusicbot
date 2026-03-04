@@ -1,84 +1,61 @@
 const { EmbedBuilder } = require('discord.js');
 const { formatDuration } = require('../utils/formatDuration');
 
-function createProgressBar(position, duration, barLength = 12) {
-  const progress = Math.min(position / duration, 1);
-  const filledLength = Math.round(barLength * progress);
-  const bar = '▬'.repeat(filledLength) + '🔘' + '▬'.repeat(barLength - filledLength);
-  const elapsed = formatDuration(Math.floor(position / 1000));
-  const total = formatDuration(Math.floor(duration / 1000));
-  return `${bar} \`${elapsed} / ${total}\``;
-}
-
-function getActiveFilters(player) {
-  const filterData = player.filterManager?.data || {};
-  const filterNames = {
-    equalizer: 'Bass Boost',
-    timescale: null, // Determined below
-    karaoke: 'Karaoke',
-    tremolo: 'Tremolo',
-    vibrato: 'Vibrato',
-    rotation: 'Rotation',
-    lowPass: 'Low Pass',
-  };
-
-  const active = [];
-  for (const [key, label] of Object.entries(filterNames)) {
-    if (filterData[key]) {
-      if (key === 'timescale') {
-        const ts = filterData[key];
-        if (ts.speed >= 1.2) active.push('Nightcore');
-        else if (ts.speed <= 0.9) active.push('Vaporwave');
-        else active.push('Timescale');
-      } else {
-        active.push(label);
-      }
-    }
-  }
-  return active;
-}
-
 function getSourceIcon(uri) {
   if (!uri) return '🎵';
   if (uri.includes('youtube.com') || uri.includes('youtu.be')) return '▶️';
   if (uri.includes('spotify.com')) return '🟢';
   if (uri.includes('soundcloud.com')) return '🟠';
-  if (uri.includes('deezer.com')) return '🟣';
-  if (uri.includes('apple.com')) return '🍎';
   if (uri.includes('audius.co')) return '🎧';
+  if (uri.includes('bandcamp.com')) return '🔵';
+  if (uri.includes('twitch.tv')) return '🟣';
   return '🎵';
+}
+
+function getActiveFilters(player) {
+  const filterData = player.filterManager?.data;
+  if (!filterData) return [];
+  const names = { timescale: 'Timescale', karaoke: 'Karaoke', tremolo: 'Tremolo', vibrato: 'Vibrato', rotation: 'Rotation', lowPass: 'Low Pass' };
+  const active = [];
+  for (const [key, label] of Object.entries(names)) {
+    const val = filterData[key];
+    if (!val || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) continue;
+    active.push(label);
+  }
+  if (filterData.equalizer || (player.filterManager?.equalizerBands?.length > 0)) {
+    active.push('Equalizer');
+  }
+  return active;
 }
 
 function nowPlayingEmbed(track, player) {
   const info = track.info;
+  const icon = getSourceIcon(info.uri);
   const embed = new EmbedBuilder()
     .setColor(0x5865f2)
     .setTitle('Now Playing')
-    .setDescription(`[${info.title}](${info.uri})`)
+    .setDescription(`${icon} [${info.title}](${info.uri})`)
     .setThumbnail(info.artworkUrl || null)
-    .setTimestamp();
+    .addFields(
+      { name: 'Duration', value: formatDuration(Math.floor(info.duration / 1000)), inline: true },
+      { name: 'Author', value: info.author || 'Unknown', inline: true },
+      { name: 'Requested by', value: track.requester ? `<@${track.requester.id}>` : 'Unknown', inline: true },
+    );
 
-  const fields = [
-    { name: 'Duration', value: formatDuration(Math.floor(info.duration / 1000)), inline: true },
-    { name: 'Author', value: info.author || 'Unknown', inline: true },
-    { name: 'Requested by', value: track.requester ? `<@${track.requester.id}>` : 'Unknown', inline: true },
-  ];
-
-  // Add progress bar if player is provided
-  if (player && info.duration > 0) {
-    const position = player.position || 0;
-    fields.push({ name: 'Progress', value: createProgressBar(position, info.duration), inline: false });
-  }
-
-  // Show active filters if player is provided
   if (player) {
+    const pos = player.position || 0;
+    const dur = info.duration || 0;
+    const progress = dur > 0 ? Math.round((pos / dur) * 20) : 0;
+    const bar = '▬'.repeat(progress) + '🔘' + '▬'.repeat(20 - progress);
+    embed.addFields({ name: 'Progress', value: `${bar}\n\`${formatDuration(Math.floor(pos / 1000))} / ${formatDuration(Math.floor(dur / 1000))}\`` });
+
     const filters = getActiveFilters(player);
     if (filters.length > 0) {
-      fields.push({ name: 'Filters', value: filters.join(', '), inline: false });
+      embed.addFields({ name: 'Filters', value: filters.join(', ') });
     }
   }
 
-  embed.addFields(...fields);
+  embed.setTimestamp();
   return embed;
 }
 
@@ -87,12 +64,12 @@ function addedToQueueEmbed(track, position) {
   const icon = getSourceIcon(info.uri);
   return new EmbedBuilder()
     .setColor(0x57f287)
-    .setTitle(`${icon} Added to Queue`)
-    .setDescription(`[${info.title}](${info.uri})`)
+    .setTitle('Added to Queue')
+    .setDescription(`${icon} [${info.title}](${info.uri})`)
     .setThumbnail(info.artworkUrl || null)
     .addFields(
       { name: 'Duration', value: formatDuration(Math.floor(info.duration / 1000)), inline: true },
-      { name: 'Position in Queue', value: `#${position}`, inline: true },
+      { name: 'Position', value: `#${position}`, inline: true },
     );
 }
 
@@ -107,14 +84,16 @@ function queueEmbed(player, page = 0) {
   const end = Math.min(start + itemsPerPage, tracks.length);
 
   const currentInfo = current?.info;
+  const icon = currentInfo ? getSourceIcon(currentInfo.uri) : '🎵';
   const description = currentInfo
-    ? `**Now Playing:** [${currentInfo.title}](${currentInfo.uri}) - \`${formatDuration(Math.floor(currentInfo.duration / 1000))}\`\n\n`
+    ? `**Now Playing:** ${icon} [${currentInfo.title}](${currentInfo.uri}) - \`${formatDuration(Math.floor(currentInfo.duration / 1000))}\`\n\n`
     : '';
 
   const queueList = tracks.length > 0
-    ? tracks.slice(start, end).map((t, i) =>
-        `**${start + i + 1}.** [${t.info.title}](${t.info.uri}) - \`${formatDuration(Math.floor(t.info.duration / 1000))}\``
-      ).join('\n')
+    ? tracks.slice(start, end).map((t, i) => {
+        const tIcon = getSourceIcon(t.info.uri);
+        return `**${start + i + 1}.** ${tIcon} [${t.info.title}](${t.info.uri}) - \`${formatDuration(Math.floor(t.info.duration / 1000))}\``;
+      }).join('\n')
     : 'No more songs in queue.';
 
   return new EmbedBuilder()

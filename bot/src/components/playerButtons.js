@@ -9,12 +9,14 @@ function createPlayerRow() {
     new ButtonBuilder().setCustomId('player_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('player_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
   );
+
   const volumeRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('player_bigvoldown').setLabel('--').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('player_voldown').setLabel('-').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('player_volup').setLabel('+').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('player_bigvolup').setLabel('++').setStyle(ButtonStyle.Secondary),
   );
+
   return [controlRow, volumeRow];
 }
 
@@ -80,38 +82,30 @@ async function handleButton(interaction) {
         break;
 
       case 'volup': {
-        const curUp = player.volume;
-        if (curUp >= 100) return interaction.reply({ content: '🔊 Volume is already at max.', ephemeral: true });
-        const newUp = Math.min(curUp + 5, 100);
-        await player.setVolume(newUp);
-        await interaction.reply({ content: `🔊 Volume: **${newUp}%** (+5)` });
+        const newVol = Math.min(100, player.volume + 5);
+        await player.setVolume(newVol);
+        await interaction.reply({ content: `🔊 Volume: **${newVol}%** (+5)` });
         break;
       }
 
       case 'voldown': {
-        const curDown = player.volume;
-        if (curDown <= 0) return interaction.reply({ content: '🔇 Volume is already at minimum.', ephemeral: true });
-        const newDown = Math.max(curDown - 5, 0);
-        await player.setVolume(newDown);
-        await interaction.reply({ content: `🔉 Volume: **${newDown}%** (-5)` });
+        const newVol = Math.max(0, player.volume - 5);
+        await player.setVolume(newVol);
+        await interaction.reply({ content: `🔉 Volume: **${newVol}%** (-5)` });
         break;
       }
 
       case 'bigvolup': {
-        const curBigUp = player.volume;
-        if (curBigUp >= 100) return interaction.reply({ content: '🔊 Volume is already at max.', ephemeral: true });
-        const newBigUp = Math.min(curBigUp + 20, 100);
-        await player.setVolume(newBigUp);
-        await interaction.reply({ content: `🔊 Volume: **${newBigUp}%** (+20)` });
+        const newVol = Math.min(100, player.volume + 20);
+        await player.setVolume(newVol);
+        await interaction.reply({ content: `🔊 Volume: **${newVol}%** (+20)` });
         break;
       }
 
       case 'bigvoldown': {
-        const curBigDown = player.volume;
-        if (curBigDown <= 0) return interaction.reply({ content: '🔇 Volume is already at minimum.', ephemeral: true });
-        const newBigDown = Math.max(curBigDown - 20, 0);
-        await player.setVolume(newBigDown);
-        await interaction.reply({ content: `🔉 Volume: **${newBigDown}%** (-20)` });
+        const newVol = Math.max(0, player.volume - 20);
+        await player.setVolume(newVol);
+        await interaction.reply({ content: `🔉 Volume: **${newVol}%** (-20)` });
         break;
       }
     }
