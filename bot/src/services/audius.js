@@ -1,7 +1,8 @@
 const AUDIUS_API = 'https://api.audius.co/v1';
+const APP_NAME = 'ZAOMusicBot';
 
 async function searchTracks(query, limit = 10) {
-  const url = `${AUDIUS_API}/tracks/search?query=${encodeURIComponent(query)}&limit=${limit}`;
+  const url = `${AUDIUS_API}/tracks/search?query=${encodeURIComponent(query)}&limit=${limit}&app_name=${APP_NAME}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Audius search failed: ${res.status}`);
   const json = await res.json();
@@ -10,11 +11,11 @@ async function searchTracks(query, limit = 10) {
 
 function getStreamUrl(trackId) {
   // Return the stream endpoint directly — Lavalink follows the redirect itself
-  return `${AUDIUS_API}/tracks/${trackId}/stream`;
+  return `${AUDIUS_API}/tracks/${trackId}/stream?app_name=${APP_NAME}`;
 }
 
 async function getPlaylist(playlistId) {
-  const url = `${AUDIUS_API}/playlists/${playlistId}`;
+  const url = `${AUDIUS_API}/playlists/${playlistId}?app_name=${APP_NAME}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Audius playlist fetch failed: ${res.status}`);
   const json = await res.json();
@@ -29,7 +30,7 @@ async function getPlaylist(playlistId) {
  * then fetches the appropriate endpoint.
  */
 async function resolveUrl(audiusUrl) {
-  const url = `${AUDIUS_API}/resolve?url=${encodeURIComponent(audiusUrl)}`;
+  const url = `${AUDIUS_API}/resolve?url=${encodeURIComponent(audiusUrl)}&app_name=${APP_NAME}`;
   const res = await fetch(url, { redirect: 'manual' });
 
   if (res.status >= 300 && res.status < 400) {

@@ -1,21 +1,21 @@
-# ZAOMusicBot v2.0.0
+# ZAOMusicBot v2.1.0
 
-A feature-rich Discord music bot powered by **Lavalink** and **discord.js v14**, with a **Next.js** playlist management web UI.
+A feature-rich Discord music bot powered by **Lavalink 4.2.2** and **discord.js v14**, with a **Next.js** playlist management web UI. Supports Discord's DAVE (E2EE voice encryption) protocol enforced since March 2026.
 
 ## Supported Platforms
 
-| Platform | How to Use | Icon | Status |
-|----------|-----------|------|--------|
-| YouTube | `/play <search or URL>` | ▶️ | Ready |
-| Spotify | `/play <spotify link>` | 🟢 | Ready |
-| SoundCloud | `/play <soundcloud link>` | 🟠 | Ready |
-| Audius | `/play audius:<search>` or `/play <audius.co link>` | 🎧 | Ready |
-| Bandcamp | `/play <bandcamp link>` | 🎵 | Ready |
-| Twitch | `/play <twitch stream link>` | 🎵 | Ready |
-| Vimeo | `/play <vimeo link>` | 🎵 | Ready |
-| Direct URL | `/play <any .mp3/.wav/audio URL>` | 🎵 | Ready |
-| Deezer | `/play <deezer link>` | 🟣 | Needs key (see Setup) |
-| Apple Music | `/play <apple music link>` | 🍎 | Needs token (see Setup) |
+| Platform | How to Use | Status |
+|----------|-----------|--------|
+| YouTube | `/play <search or URL>` | Ready |
+| Spotify | `/play <spotify link>` | Ready |
+| SoundCloud | `/play <soundcloud link>` | Ready |
+| Audius | `/play audius:<search>` or `/play <audius.co link>` | Ready |
+| Bandcamp | `/play <bandcamp link>` | Ready |
+| Twitch | `/play <twitch stream link>` | Ready |
+| Vimeo | `/play <vimeo link>` | Ready |
+| Direct URL | `/play <any .mp3/.wav/audio URL>` | Ready |
+| Deezer | `/play <deezer link>` | Needs key (see Setup) |
+| Apple Music | `/play <apple music link>` | Needs token (see Setup) |
 
 ## Features
 
@@ -25,7 +25,7 @@ A feature-rich Discord music bot powered by **Lavalink** and **discord.js v14**,
 - Audio filters: Bass Boost, Nightcore, Vaporwave, Karaoke, Tremolo, Vibrato, Rotation, Low Pass
 - Now-playing embed with progress bar and active filters display
 - Source icons showing where tracks come from
-- Default volume starts at 10%
+- Default volume starts at 50%
 
 ### Volume Controls
 - `/volume <1-100>` — set exact volume
@@ -40,10 +40,10 @@ A feature-rich Discord music bot powered by **Lavalink** and **discord.js v14**,
 | `/play <query>` | Play a song, URL, or `audius:<search>` | No |
 | `/pause` | Pause playback | Yes |
 | `/resume` | Resume playback | Yes |
-| `/skip` | Skip current song (vote skip for non-DJ) | No |
+| `/skip` | Skip current song | No |
 | `/stop` | Stop and clear queue | Yes |
-| `/seek <seconds>` | Seek to position (with bounds checking) | No |
-| `/queue [page]` | Show queue with pagination buttons | No |
+| `/seek <seconds>` | Seek to position | No |
+| `/queue [page]` | Show queue | No |
 | `/nowplaying` | Show current song with progress bar | No |
 | `/shuffle` | Shuffle the queue | No |
 | `/remove <pos>` | Remove a track from queue | Yes |
@@ -65,11 +65,8 @@ A feature-rich Discord music bot powered by **Lavalink** and **discord.js v14**,
 
 ### Player Buttons
 Every now-playing embed has two rows of buttons:
-- **Row 1:** ⏸️ Pause/Resume | ⏭️ Skip | ⏹️ Stop | 🔁 Loop | 🔀 Shuffle
+- **Row 1:** Pause/Resume | Skip | Stop | Loop | Shuffle
 - **Row 2:** `--` Vol -20% | `-` Vol -5% | `+` Vol +5% | `++` Vol +20%
-
-### Vote Skip
-When a non-DJ user runs `/skip`, a vote is initiated. Over 50% of voice channel members must vote yes to skip. DJs always skip instantly.
 
 ### Web UI
 - Browse and view playlists
@@ -89,8 +86,9 @@ ZAOMusicBot/
 │       ├── lavalink/       # Lavalink event setup
 │       ├── services/       # External API integrations (Audius)
 │       ├── utils/          # Helpers (DJ perms, formatting)
-│       ├── config.js       # Config with startup validation
-│       ├── index.js        # Entry point with graceful shutdown
+│       ├── config.js       # Config loader
+│       ├── index.js        # Bot entry point
+│       ├── launcher.js     # Combined launcher (Lavalink + bot)
 │       └── deploy-commands.js
 ├── web/                    # Next.js playlist web UI
 │   ├── src/app/
@@ -99,7 +97,7 @@ ZAOMusicBot/
 │   └── data/playlists.json
 ├── lavalink/               # Lavalink server
 │   ├── application.yml
-│   └── Lavalink.jar
+│   └── Lavalink.jar        # v4.2.2 (download separately)
 └── package.json            # Workspace root
 ```
 
@@ -118,7 +116,18 @@ cd ZAOMusicBot
 npm install
 ```
 
-### 2. Configure environment
+### 2. Download Lavalink
+
+Download Lavalink 4.2.2+ (required for Discord DAVE E2EE support):
+
+```bash
+# From GitHub releases
+curl -L -o lavalink/Lavalink.jar https://github.com/lavalink-devs/Lavalink/releases/download/4.2.2/Lavalink.jar
+```
+
+> **Important:** Lavalink 4.2.0+ is required. Discord enforced DAVE (E2EE voice encryption) on March 2, 2026. Older versions (4.0.x) cannot send audio.
+
+### 3. Configure environment
 
 Copy `.env.example` to `bot/.env` and fill in:
 
@@ -141,8 +150,6 @@ PLAYLIST_API_URL=http://localhost:3000
 PLAYLIST_API_KEY=
 ```
 
-The bot validates required vars on startup and warns about missing optional ones.
-
 ### Optional: Enable Deezer & Apple Music
 
 In `lavalink/application.yml`, set the source to `true` and add credentials:
@@ -160,46 +167,71 @@ applemusic:
   countryCode: "US"
 ```
 
-### 3. Start Lavalink
+### 4. Start Lavalink
 
 ```bash
 npm run lavalink
 ```
 
-### 4. Deploy slash commands
+### 5. Deploy slash commands
 
 ```bash
 npm run deploy-commands
 ```
 
-### 5. Start the bot
+### 6. Start the bot
 
 ```bash
 npm run dev:bot
 ```
 
-### 6. Start the web UI
+### 7. Start the web UI (optional)
 
 ```bash
 npm run dev:web
 ```
 
+## Hosting on bot-hosting.net
+
+To host on [bot-hosting.net](https://bot-hosting.net), create **two free servers**:
+
+### Server 1: Lavalink (Java)
+1. Create a new server and select **Java**
+2. Upload `lavalink/Lavalink.jar` and `lavalink/application.yml`
+3. Set the startup JAR file to `Lavalink.jar`
+4. Note the server's IP/hostname for the bot config
+
+### Server 2: Discord Bot (Node.js)
+1. Create a new server and select **Node.js**
+2. Upload the `bot/` folder contents (including `package.json`)
+3. Set startup file to `src/index.js`
+4. Set environment variables:
+   - `DISCORD_TOKEN` — your bot token
+   - `CLIENT_ID` — your bot's client ID
+   - `LAVALINK_HOST` — Server 1's hostname/IP
+   - `LAVALINK_PORT` — `2333`
+   - `LAVALINK_PASSWORD` — `zaomusicbot`
+
+### Alternative: Single Server with Launcher
+If you want to run both on one Node.js server, use the launcher:
+1. Upload the entire project
+2. Set startup file to `src/launcher.js`
+3. The launcher auto-downloads Java 17 and starts Lavalink before the bot
+4. Requires ~512MB+ RAM
+
 ## Roadmap
 
-These are ideas for future development:
-
-- [ ] **Favorites system** — `/fav` to save a song, `/favlist` to view your saved favorites
-- [ ] **Song history** — `/history` to see recently played tracks in the server
-- [ ] **DJ request queue** — users submit song requests, DJ approves or denies them
-- [ ] **Auto-lyrics** — automatically show lyrics when a song starts playing
-- [ ] **Playlist import** — paste a Spotify/YouTube playlist URL and save it to the web dashboard
-- [ ] **24/7 mode** — keep the bot in a voice channel playing music non-stop
-- [ ] **Custom playlists per user** — personal playlists tied to Discord user IDs
-- [ ] **Web dashboard auth** — Discord OAuth login for the web UI
-- [ ] **Music quiz game** — `/quiz` to start a "guess the song" game in voice chat
+- [ ] Favorites system — `/fav` to save a song, `/favlist` to view saved favorites
+- [ ] Song history — `/history` to see recently played tracks
+- [ ] DJ request queue — users submit song requests, DJ approves or denies
+- [ ] Auto-lyrics — automatically show lyrics when a song starts
+- [ ] Playlist import — paste a Spotify/YouTube playlist URL and save it
+- [ ] 24/7 mode — keep the bot in a voice channel playing non-stop
+- [ ] Custom playlists per user — personal playlists tied to Discord user IDs
+- [ ] Web dashboard auth — Discord OAuth login for the web UI
 
 ## Tech Stack
-- **Bot**: discord.js v14, lavalink-client
-- **Audio**: Lavalink with YouTube, LavaSrc (Spotify + optional Deezer/Apple Music), and custom Audius integration
+- **Bot**: discord.js v14, lavalink-client v2.9.7
+- **Audio**: Lavalink 4.2.2 with DAVE E2EE, YouTube plugin, LavaSrc (Spotify), custom Audius integration
 - **Web**: Next.js 15, React 19
 - **Data**: JSON file storage

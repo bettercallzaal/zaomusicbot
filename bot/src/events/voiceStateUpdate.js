@@ -16,21 +16,17 @@ module.exports = {
 
       const humans = channel.members.filter(m => !m.user.bot);
       if (humans.size === 0) {
-        setTimeout(async () => {
-          try {
-            const refreshed = oldState.guild.channels.cache.get(channel.id);
-            if (refreshed) {
-              const stillAlone = refreshed.members.filter(m => !m.user.bot).size === 0;
-              if (stillAlone) {
-                const player = lavalink.getPlayer(oldState.guild.id);
-                if (player) {
-                  await player.destroy();
-                }
-                console.log(`Left empty voice channel in ${oldState.guild.name}`);
+        setTimeout(() => {
+          const refreshed = oldState.guild.channels.cache.get(channel.id);
+          if (refreshed) {
+            const stillAlone = refreshed.members.filter(m => !m.user.bot).size === 0;
+            if (stillAlone) {
+              const player = lavalink.getPlayer(oldState.guild.id);
+              if (player) {
+                player.destroy();
               }
+              console.log(`Left empty voice channel in ${oldState.guild.name}`);
             }
-          } catch (error) {
-            console.error('Auto-disconnect error:', error.message);
           }
         }, 30_000); // 30 second grace period
       }

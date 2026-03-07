@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { formatDuration } = require('../utils/formatDuration');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,22 +11,8 @@ module.exports = {
   async execute(interaction) {
     const player = interaction.client.lavalink.getPlayer(interaction.guildId);
     if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
-
     const seconds = interaction.options.getInteger('seconds');
-    const track = player.queue.current;
-    const durationSec = Math.floor(track.info.duration / 1000);
-
-    if (seconds > durationSec) {
-      return interaction.reply({
-        content: `Position exceeds track duration. Current track is **${formatDuration(durationSec)}** long.`,
-        ephemeral: true,
-      });
-    }
-
-    const currentPos = formatDuration(Math.floor(player.position / 1000));
-    await player.seek(seconds * 1000);
-    await interaction.reply(
-      `⏩ Seeked to **${formatDuration(seconds)}** (was at ${currentPos}) | Total: \`${formatDuration(durationSec)}\``
-    );
+    await player.seek(seconds * 1000); // Lavalink uses ms
+    await interaction.reply(`⏩ Seeked to **${seconds}s**`);
   },
 };

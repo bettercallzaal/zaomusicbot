@@ -4,7 +4,7 @@ const audius = require('../services/audius');
 
 async function loadAudiusTrack(player, audiusTrack, requester) {
   const streamUrl = audius.getStreamUrl(audiusTrack.id);
-  const result = await player.search({ query: streamUrl }, requester);
+  const result = await player.search({ query: streamUrl, source: 'http' }, requester);
   if (!result.tracks.length) return null;
 
   const track = result.tracks[0];
@@ -77,7 +77,7 @@ module.exports = {
                   await player.queue.add(result.value);
                   loaded++;
                   if (loaded === 1 && !player.playing) {
-                    if (isNewPlayer) await player.setVolume(10);
+                    if (isNewPlayer) await player.setVolume(50);
                     await player.play();
                   }
                 }
@@ -106,7 +106,7 @@ module.exports = {
           }
 
           if (!player.playing) {
-            if (isNewPlayer) await player.setVolume(10);
+            if (isNewPlayer) await player.setVolume(50);
             await player.play();
           }
           return;
@@ -131,7 +131,7 @@ module.exports = {
         }
 
         if (!player.playing) {
-          if (isNewPlayer) await player.setVolume(10);
+          if (isNewPlayer) await player.setVolume(50);
           await player.play();
         }
         return;
@@ -164,7 +164,7 @@ module.exports = {
       }
 
       if (!player.playing) {
-        if (isNewPlayer) await player.setVolume(10);
+        if (isNewPlayer) await player.setVolume(50);
         await player.play();
       }
     } catch (error) {

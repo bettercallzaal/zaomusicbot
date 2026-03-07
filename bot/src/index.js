@@ -50,7 +50,6 @@ loadLavalinkEvents(client);
 async function shutdown(signal) {
   console.log(`\nReceived ${signal}. Shutting down gracefully...`);
   try {
-    // Destroy all active players
     for (const player of client.lavalink.players.values()) {
       try {
         await player.destroy();
@@ -58,7 +57,6 @@ async function shutdown(signal) {
         // Ignore errors during shutdown
       }
     }
-    // Destroy the client
     client.destroy();
     console.log('Bot shut down cleanly.');
   } catch (error) {

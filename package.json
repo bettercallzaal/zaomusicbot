@@ -12,7 +12,8 @@
     "dev:web": "npm run dev --workspace=web",
     "build:web": "npm run build --workspace=web",
     "deploy-commands": "npm run deploy-commands --workspace=bot",
-    "lavalink": "cd lavalink && /opt/homebrew/opt/openjdk@17/bin/java -jar Lavalink.jar"
+    "lavalink": "cd lavalink && java -jar Lavalink.jar",
+    "start": "npm run start --workspace=bot"
   },
   "dependencies": {
     "lavalink-client": "^2.9.7"
