@@ -10,8 +10,8 @@ module.exports = {
   async execute(interaction) {
     const player = interaction.client.lavalink.getPlayer(interaction.guildId);
     if (!player || !player.queue.current) return interaction.reply({ content: 'Nothing is playing.', ephemeral: true });
-    const embed = nowPlayingEmbed(player.queue.current);
-    const row = createPlayerRow();
-    await interaction.reply({ embeds: [embed], components: [row] });
+    const embed = nowPlayingEmbed(player.queue.current, player);
+    const rows = createPlayerRow();
+    await interaction.reply({ embeds: [embed], components: rows });
   },
 };

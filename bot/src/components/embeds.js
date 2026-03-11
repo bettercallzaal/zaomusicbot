@@ -13,16 +13,14 @@ function getSourceIcon(uri) {
 }
 
 function getActiveFilters(player) {
-  const filterData = player.filterManager?.data;
-  if (!filterData) return [];
-  const names = { timescale: 'Timescale', karaoke: 'Karaoke', tremolo: 'Tremolo', vibrato: 'Vibrato', rotation: 'Rotation', lowPass: 'Low Pass' };
+  const filters = player.filterManager?.filters;
+  if (!filters) return [];
+  const names = { timescale: 'Timescale', karaoke: 'Karaoke', tremolo: 'Tremolo', vibrato: 'Vibrato', rotation: 'Rotation', lowPass: 'Low Pass', nightcore: 'Nightcore', vaporwave: 'Vaporwave' };
   const active = [];
   for (const [key, label] of Object.entries(names)) {
-    const val = filterData[key];
-    if (!val || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) continue;
-    active.push(label);
+    if (filters[key]) active.push(label);
   }
-  if (filterData.equalizer || (player.filterManager?.equalizerBands?.length > 0)) {
+  if (player.filterManager?.equalizerBands?.length > 0) {
     active.push('Equalizer');
   }
   return active;
