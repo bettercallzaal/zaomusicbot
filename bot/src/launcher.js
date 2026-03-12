@@ -86,10 +86,14 @@ function waitForLavalink(port = 2333, timeout = 30000) {
 async function main() {
   const javaBin = await ensureJava();
 
+  // Load .env so Lavalink can inherit Spotify credentials
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
   console.log('[Launcher] Starting Lavalink...');
   const lavalink = spawn(javaBin, ['-jar', LAVALINK_JAR], {
     cwd: LAVALINK_DIR,
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env },
   });
 
   lavalink.stdout.on('data', (d) => {

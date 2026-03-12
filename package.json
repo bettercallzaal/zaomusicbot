@@ -12,7 +12,7 @@
     "dev:web": "npm run dev --workspace=web",
     "build:web": "npm run build --workspace=web",
     "deploy-commands": "npm run deploy-commands --workspace=bot",
-    "lavalink": "cd lavalink && java -jar Lavalink.jar",
+    "lavalink": "export $(grep -v '^#' bot/.env | xargs) && cd lavalink && java -jar Lavalink.jar",
     "start": "npm run start --workspace=bot"
   },
   "dependencies": {

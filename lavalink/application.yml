@@ -9,7 +9,7 @@ lavalink:
     - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.8.1"
       repository: "https://maven.lavalink.dev/releases"
   server:
-    password: "zaomusicbot"
+    password: "${LAVALINK_PASSWORD:zaomusicbot}"
     sources:
       youtube: false
       bandcamp: true
@@ -37,8 +37,8 @@ plugins:
       yandexmusic: false
       applemusic: false
     spotify:
-      clientId: "5f43f085eb74414c941c4f8d79ff3a58"
-      clientSecret: "a53b3e2886e34d17b2d46f1618cb7b82"
+      clientId: "${SPOTIFY_CLIENT_ID}"
+      clientSecret: "${SPOTIFY_CLIENT_SECRET}"
       countryCode: "US"
 
 logging:
