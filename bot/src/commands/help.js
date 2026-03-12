@@ -33,10 +33,14 @@ module.exports = {
           '`/volumedown` - Volume -5%',
           '`/volumebigup` - Volume +20%',
           '`/volumebigdown` - Volume -20%',
-          'Starts at **10%** on join',
+          'Starts at **50%** on join',
         ].join('\n') },
         { name: '🔧 Settings', value: [
           '`/filter <name>` - Toggle audio filter (DJ)',
+        ].join('\n') },
+        { name: '📻 Radio & Lofi', value: [
+          '`/radio <artist>` - Play an artist on shuffle loop 24/7',
+          '`/lofi` - Queue shuffled lofi tracks at 5% volume',
         ].join('\n') },
         { name: '🎧 Platforms', value: [
           'YouTube, Spotify, SoundCloud, Bandcamp, Twitch, Audius',
@@ -45,6 +49,7 @@ module.exports = {
         { name: '📁 Playlists', value: [
           '`/playlist list` - List all website playlists',
           '`/playlist load <name>` - Load a playlist',
+          '`/save <name>` - Save current queue as playlist',
         ].join('\n') },
       )
       .setFooter({ text: '(DJ) = Requires DJ role | Volume buttons on Now Playing embed' });

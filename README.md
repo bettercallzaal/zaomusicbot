@@ -1,4 +1,4 @@
-# ZAOMusicBot v2.1.0
+# ZAOMusicBot v2.2.0
 
 A feature-rich Discord music bot powered by **Lavalink 4.2.2** and **discord.js v14**, with a **Next.js** playlist management web UI. Supports Discord's DAVE (E2EE voice encryption) protocol enforced since March 2026.
 
@@ -26,6 +26,11 @@ A feature-rich Discord music bot powered by **Lavalink 4.2.2** and **discord.js 
 - Now-playing embed with progress bar and active filters display
 - Source icons showing where tracks come from
 - Default volume starts at 50%
+
+### Radio & Lofi
+- `/radio <artist>` — searches Spotify for an artist's tracks, shuffles them, and plays on queue loop 24/7
+- `/lofi` — queues 8 shuffled lofi tracks from varied search queries (jazz, piano, rain, cafe, ambient, etc.) at 5% volume
+- Every run gives a different randomized mix
 
 ### Volume Controls
 - `/volume <1-100>` — set exact volume
@@ -60,6 +65,8 @@ A feature-rich Discord music bot powered by **Lavalink 4.2.2** and **discord.js 
 | `/playlist list` | List all website playlists | No |
 | `/playlist load <name>` | Load a playlist into queue | No |
 | `/save <name>` | Save current queue as a website playlist | No |
+| `/lofi` | Queue shuffled lofi tracks at 5% volume | No |
+| `/radio <artist>` | Play an artist on shuffle loop 24/7 (Spotify) | No |
 | `/lyrics [query]` | Show lyrics for current or given song | No |
 | `/help` | Show all commands | No |
 
@@ -315,12 +322,12 @@ If you want to run both on one Node.js server:
 - [ ] DJ request queue — users submit song requests, DJ approves or denies
 - [ ] Auto-lyrics — automatically show lyrics when a song starts
 - [ ] Playlist import — paste a Spotify/YouTube playlist URL and save it
-- [ ] 24/7 mode — keep the bot in a voice channel playing non-stop
+- [x] 24/7 mode — `/radio <artist>` plays on shuffle loop indefinitely
 - [ ] Custom playlists per user — personal playlists tied to Discord user IDs
 - [ ] Web dashboard auth — Discord OAuth login for the web UI
 
 ## Tech Stack
 - **Bot**: discord.js v14, lavalink-client v2.9.7
-- **Audio**: Lavalink 4.2.2 with DAVE E2EE, YouTube plugin, LavaSrc (Spotify), custom Audius integration
+- **Audio**: Lavalink 4.2.2 with DAVE E2EE, YouTube plugin 1.18.0, LavaSrc 4.8.1 (Spotify), custom Audius integration
 - **Web**: Next.js 15, React 19
 - **Data**: JSON file storage
